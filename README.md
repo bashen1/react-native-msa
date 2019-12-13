@@ -1,2 +1,26 @@
 # react-native-msa
-移动安全联盟SDK
+
+[![npm version](https://badge.fury.io/js/react-native-msa.svg)](https://badge.fury.io/js/react-native-msa)
+
+## 开始
+
+`$ npm install react-native-msa --save`
+
+如果react native 版本小于0.6X，还需要执行 `react-native link react-native-msa`
+
+## 注意
+
+将 `supplierconfig.json` 拷贝到项目 `android/app/src/main/assets` 目录下。（暂时不用修改，只需原样放到assets目录下即可，这个是给未来做准备的。如果想要使用VAID，可修改里边对应内容，特别是需要设置 appid 的部分，要去对应厂商的应用商店里注册自己的 app，来获取对应appid。）
+
+
+## 使用方法
+
+|         方法        |   参数  |   说明  |
+| :-----------------: | :---: | :---: |
+| initSDK | initType | 初始化SDK，参数为`{initType: 'reflect'}`，initType的值为reflect、direct |
+| isSupport |  | 是否支持MSA |
+| getOAID |  | 获取OAID |
+| getVAID |  | 获取VAID |
+| getAAID |  | 获取AAID |
+
+详见examples目录
