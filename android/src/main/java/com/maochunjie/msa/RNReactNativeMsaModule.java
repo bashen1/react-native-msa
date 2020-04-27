@@ -1,5 +1,7 @@
 package com.maochunjie.msa;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import com.bun.miitmdid.core.*;
 import com.facebook.react.bridge.*;
@@ -32,7 +34,11 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
             map.putString("code", Integer.toString(1));
             p.resolve(map);
         } else {
-            JLibrary.InitEntry(this.reactContext.getBaseContext());
+            try {
+                JLibrary.InitEntry(this.reactContext.getBaseContext());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             int nres = 1;
             String message = "success";
             String initType = "reflect";
@@ -90,4 +96,12 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
             isSupport = data.getBoolean("isSupport");
         }
     };
+
+    public static void initMSA(Context context) {
+        try {
+            JLibrary.InitEntry(context);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

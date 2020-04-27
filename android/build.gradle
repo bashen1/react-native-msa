@@ -40,6 +40,6 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
-    implementation files('libs/miit_mdid_1.0.10.aar')
+    implementation files('libs/msa_mdid_1.0.13.aar')
 }
   

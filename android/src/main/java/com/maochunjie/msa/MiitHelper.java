@@ -2,10 +2,10 @@ package com.maochunjie.msa;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
-import com.bun.miitmdid.core.IIdentifierListener;
 import com.bun.miitmdid.core.MdidSdk;
 import com.bun.miitmdid.core.MdidSdkHelper;
-import com.bun.miitmdid.supplier.IdSupplier;
+import com.bun.supplier.IIdentifierListener;
+import com.bun.supplier.IdSupplier;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
@@ -52,7 +52,6 @@ public class MiitHelper implements IIdentifierListener {
         if (_supplier == null) {
             return;
         }
-        _supplier.shutDown();           //关闭接口
         if (_listener != null) {
             WritableMap map = Arguments.createMap();
             map.putString("OAID", _supplier.getOAID());
