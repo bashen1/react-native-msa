@@ -10,7 +10,7 @@
 
 ## 注意
 
-将 `supplierconfig.json` 拷贝到项目 `android/app/src/main/assets` 目录下。（暂时不用修改，只需原样放到assets目录下即可，这个是给未来做准备的。如果想要使用VAID，可修改里边对应内容，特别是需要设置 appid 的部分，要去对应厂商的应用商店里注册自己的 app，来获取对应appid。）
+将`supplierconfig.json`拷贝到项目`android/app/src/main/assets`目录下。（暂时不用修改，只需原样放到assets目录下即可，这个是给未来做准备的。如果想要使用VAID，可修改里边对应内容，特别是需要设置appid的部分，要去对应厂商的应用商店里注册自己的app，来获取对应appid。）
 
 
 ## 如果与最新的TalkingData一起使用
@@ -40,7 +40,7 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
 
 |         方法        |   参数  |   说明  |
 | :-----------------: | :---: | :---: |
-| initSDK | initType | 初始化SDK，参数为`{initType: 'reflect'}`，initType的值为reflect、direct |
+| initSDK | initType | 初始化SDK |
 | isSupport |  | 是否支持MSA |
 | getOAID |  | 获取OAID |
 | getVAID |  | 获取VAID |

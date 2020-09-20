@@ -18,7 +18,7 @@ android {
     compileSdkVersion safeExtGet("compileSdkVersion", 25)
     buildToolsVersion safeExtGet("buildToolsVersion", '25.0.2')
     defaultConfig {
-        minSdkVersion safeExtGet('minSdkVersion', 16)
+        minSdkVersion safeExtGet('minSdkVersion', 21)
         targetSdkVersion safeExtGet('targetSdkVersion', 25)
         versionCode 1
         versionName "1.0"
@@ -40,6 +40,5 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
-    implementation files('libs/msa_mdid_1.0.13.aar')
+    implementation files('libs/oaid_sdk_1.0.23.aar')
 }
-  

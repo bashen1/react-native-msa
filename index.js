@@ -2,8 +2,8 @@ import {NativeModules} from 'react-native';
 
 const {RNReactNativeMsa} = NativeModules;
 
-export async function initSDK(params) {
-	return await RNReactNativeMsa.initSDK(params);
+export async function initSDK() {
+	return await RNReactNativeMsa.initSDK();
 }
 
 export async function isSupport() {

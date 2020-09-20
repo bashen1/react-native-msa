@@ -3,7 +3,8 @@ package com.maochunjie.msa;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import com.bun.miitmdid.core.*;
+
+import com.bun.miitmdid.core.ErrorCode;
 import com.facebook.react.bridge.*;
 
 public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
@@ -16,6 +17,16 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
     private static String aaid = "";
     private static Boolean isSupport = false;
 
+    private static MiitHelper.AppIdsUpdater appIdsUpdater = new MiitHelper.AppIdsUpdater() {
+        @Override
+        public void OnIdsAvalid(@NonNull ReadableMap data) {
+            oaid = data.getString("OAID");
+            vaid = data.getString("VAID");
+            aaid = data.getString("AAID");
+            isSupport = data.getBoolean("isSupport");
+        }
+    };
+
     public RNReactNativeMsaModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
@@ -27,7 +38,7 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void initSDK(final ReadableMap data, final Promise p) {
+    public void initSDK(final Promise p) {
         WritableMap map = Arguments.createMap();
         if (this.isInitSDK) {
             map.putString("message", "success");
@@ -35,35 +46,36 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
             p.resolve(map);
         } else {
             try {
-                JLibrary.InitEntry(this.reactContext.getBaseContext());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            int nres = 1;
-            String message = "success";
-            String initType = "reflect";
-            if (data.getString("initType").equals("direct")) {
-                initType = "direct";
-            }
-            MiitHelper miitHelper = new MiitHelper(appIdsUpdater, initType);
-            nres = miitHelper.initSDK(this.reactContext);
+                int nres = 1;
+                String message = "success";
+                MiitHelper miitHelper = new MiitHelper(appIdsUpdater);
+                nres = miitHelper.initSDK(this.reactContext);
 
-            if (nres == ErrorCode.INIT_ERROR_DEVICE_NOSUPPORT) {//不支持的设备
-                message = "不支持的设备";
-            } else if (nres == ErrorCode.INIT_ERROR_LOAD_CONFIGFILE) {//加载配置文件出错
-                message = "加载配置文件出错";
-            } else if (nres == ErrorCode.INIT_ERROR_MANUFACTURER_NOSUPPORT) {//不支持的设备厂商
-                message = "不支持的设备厂商";
-            } else if (nres == ErrorCode.INIT_ERROR_RESULT_DELAY) {//获取接口是异步的，结果会在回调中返回，回调执行的回调可能在工作线程
-                message = "获取接口是异步的，结果会在回调中返回，回调执行的回调可能在工作线程";
-            } else if (nres == ErrorCode.INIT_HELPER_CALL_ERROR) {//反射调用出错
-                message = "反射调用出错";
-            } else {
-                this.isInitSDK = true;
+                if (nres == ErrorCode.INIT_ERROR_DEVICE_NOSUPPORT) {//不支持的设备
+                    message = "不支持的设备";
+                } else if (nres == ErrorCode.INIT_ERROR_LOAD_CONFIGFILE) {//加载配置文件出错
+                    message = "加载配置文件出错";
+                } else if (nres == ErrorCode.INIT_ERROR_MANUFACTURER_NOSUPPORT) {//不支持的设备厂商
+                    message = "不支持的设备厂商";
+                } else if (nres == ErrorCode.INIT_ERROR_RESULT_DELAY) {//获取接口是异步的，结果会在回调中返回，回调执行的回调可能在工作线程
+                    //这里暂时返回初始化成功了
+                    this.isInitSDK = true;
+                    message = "获取接口是异步的，结果会在回调中返回，回调执行的回调可能在工作线程";
+                } else if (nres == ErrorCode.INIT_HELPER_CALL_ERROR) {//反射调用出错
+                    message = "反射调用出错";
+                } else if (nres == ErrorCode.INIT_ERROR_BEGIN) {
+                    message = "初始化失败";
+                } else {
+                    this.isInitSDK = true;
+                }
+                map.putString("message", message);
+                map.putString("code", Integer.toString(nres));
+                p.resolve(map);
+            } catch (Throwable throwable) {
+                map.putString("message", "未知错误");
+                map.putString("code", Integer.toString(-1));
+                p.resolve(map);
             }
-            map.putString("message", message);
-            map.putString("code", Integer.toString(nres));
-            p.resolve(map);
         }
     }
 
@@ -87,19 +99,10 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
         p.resolve(aaid);
     }
 
-    private MiitHelper.AppIdsUpdater appIdsUpdater = new MiitHelper.AppIdsUpdater() {
-        @Override
-        public void OnIdsAvalid(@NonNull ReadableMap data) {
-            oaid = data.getString("OAID");
-            vaid = data.getString("VAID");
-            aaid = data.getString("AAID");
-            isSupport = data.getBoolean("isSupport");
-        }
-    };
-
     public static void initMSA(Context context) {
         try {
-            JLibrary.InitEntry(context);
+            MiitHelper miitHelper = new MiitHelper(appIdsUpdater);
+            miitHelper.initSDK(context);
         } catch (Exception e) {
             e.printStackTrace();
         }
