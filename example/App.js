@@ -35,9 +35,7 @@ const App: () => React$Node = () => {
           <Button
             text={'initSDK_Direct'}
             onPress={async () => {
-              let res= await MSA.initSDK({
-                initType: 'direct',
-              });
+              let res= await MSA.initSDK();
               alert(JSON.stringify(res));
             }}
           />

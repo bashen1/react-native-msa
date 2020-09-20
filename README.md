@@ -38,12 +38,12 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
 
 ## 使用方法
 
-|         方法        |   参数  |   说明  |
-| :-----------------: | :---: | :---: |
-| initSDK | initType | 初始化SDK |
-| isSupport |  | 是否支持MSA |
-| getOAID |  | 获取OAID |
-| getVAID |  | 获取VAID |
-| getAAID |  | 获取AAID |
+|         方法        |   说明  |
+| :-----------------: | :---: |
+| initSDK | 初始化SDK |
+| isSupport | 是否支持MSA |
+| getOAID | 获取OAID |
+| getVAID | 获取VAID |
+| getAAID | 获取AAID |
 
 详见examples目录
