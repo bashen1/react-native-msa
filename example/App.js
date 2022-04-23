@@ -35,7 +35,9 @@ const App: () => React$Node = () => {
           <Button
             text={'initSDK_Direct'}
             onPress={async () => {
-              let res= await MSA.initSDK();
+              let res= await MSA.initSDK({
+                cert: '证书字符串',
+              });
               alert(JSON.stringify(res));
             }}
           />
@@ -70,6 +72,12 @@ const App: () => React$Node = () => {
             text={'getAAID'}
             onPress={async () => {
               alert(await MSA.getAAID());
+            }}
+          />
+          <Button
+            text={'isLimit'}
+            onPress={async () => {
+              alert(await MSA.isLimit());
             }}
           />
         </ScrollView>

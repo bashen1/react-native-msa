@@ -1,21 +1,23 @@
 package com.maochunjie.msa;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
 
-import com.bun.miitmdid.core.ErrorCode;
+import com.bun.miitmdid.core.InfoCode;
+import com.bun.miitmdid.core.MdidSdkHelper;
 import com.facebook.react.bridge.*;
 
 public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
     private static String TAG = "RNReactNativeMsaModule";
     private final ReactApplicationContext reactContext;
 
-    private Boolean isInitSDK = false;
+    private Boolean isInitSDK = false; // 是否初始化SDK
+    private Boolean isCertInit = false; // 是否初始化证书
+
     private static String oaid = "";
     private static String vaid = "";
     private static String aaid = "";
     private static Boolean isSupport = false;
+    private static Boolean isLimit = false;
 
     private static MiitHelper.AppIdsUpdater appIdsUpdater = new MiitHelper.AppIdsUpdater() {
         @Override
@@ -24,6 +26,7 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
             vaid = data.getString("VAID");
             aaid = data.getString("AAID");
             isSupport = data.getBoolean("isSupport");
+            isLimit = data.getBoolean("isLimit");
         }
     };
 
@@ -37,45 +40,79 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
         return "RNReactNativeMsa";
     }
 
+    /**
+     * 初始化SDK
+     * 1 初始化成功
+     * 0 cert为空
+     * -1 cert初始化失败
+     * -2 未知错误
+     * @param data
+     * @param p
+     */
     @ReactMethod
-    public void initSDK(final Promise p) {
+    public void initSDK(final ReadableMap data, final Promise p) {
         WritableMap map = Arguments.createMap();
         if (this.isInitSDK) {
-            map.putString("message", "success");
+            map.putString("message", "成功");
             map.putString("code", Integer.toString(1));
             p.resolve(map);
-        } else {
-            try {
-                int nres = 1;
-                String message = "success";
-                MiitHelper miitHelper = new MiitHelper(appIdsUpdater);
-                nres = miitHelper.initSDK(this.reactContext);
+            return;
+        }
 
-                if (nres == ErrorCode.INIT_ERROR_DEVICE_NOSUPPORT) {//不支持的设备
-                    message = "不支持的设备";
-                } else if (nres == ErrorCode.INIT_ERROR_LOAD_CONFIGFILE) {//加载配置文件出错
-                    message = "加载配置文件出错";
-                } else if (nres == ErrorCode.INIT_ERROR_MANUFACTURER_NOSUPPORT) {//不支持的设备厂商
-                    message = "不支持的设备厂商";
-                } else if (nres == ErrorCode.INIT_ERROR_RESULT_DELAY) {//获取接口是异步的，结果会在回调中返回，回调执行的回调可能在工作线程
-                    //这里暂时返回初始化成功了
-                    this.isInitSDK = true;
-                    message = "获取接口是异步的，结果会在回调中返回，回调执行的回调可能在工作线程";
-                } else if (nres == ErrorCode.INIT_HELPER_CALL_ERROR) {//反射调用出错
-                    message = "反射调用出错";
-                } else if (nres == ErrorCode.INIT_ERROR_BEGIN) {
-                    message = "初始化失败";
-                } else {
-                    this.isInitSDK = true;
-                }
-                map.putString("message", message);
-                map.putString("code", Integer.toString(nres));
-                p.resolve(map);
-            } catch (Throwable throwable) {
-                map.putString("message", "未知错误");
+        String certStr = data.getString("cert");
+        if (certStr == null || certStr.equals("")) {
+            map.putString("message", "cert为空");
+            map.putString("code", Integer.toString(0));
+            p.resolve(map);
+            return;
+        }
+
+        if (!isCertInit) { // 证书只需初始化一次
+            try {
+                isCertInit = MdidSdkHelper.InitCert(this.reactContext, certStr);
+            } catch (Error e) {
+                e.printStackTrace();
+            }
+            if (!isCertInit) {
+                map.putString("message", "cert初始化失败");
                 map.putString("code", Integer.toString(-1));
                 p.resolve(map);
+                return;
             }
+        }
+
+        try {
+            MiitHelper miitHelper = new MiitHelper(appIdsUpdater);
+            int code = miitHelper.initSDK(this.reactContext);
+            String message;
+
+            if (code == InfoCode.INIT_ERROR_CERT_ERROR) {
+                message = "证书未初始化或证书无效";
+            } else if (code == InfoCode.INIT_ERROR_DEVICE_NOSUPPORT) {
+                message = "不支持的设备";
+            } else if (code == InfoCode.INIT_ERROR_LOAD_CONFIGFILE) {
+                message = "加载配置文件出错";
+            } else if (code == InfoCode.INIT_ERROR_MANUFACTURER_NOSUPPORT) {
+                message = "不支持的设备厂商";
+            } else if (code == InfoCode.INIT_ERROR_SDK_CALL_ERROR) {
+                message = "sdk调用出错";
+            } else if (code == InfoCode.INIT_INFO_RESULT_DELAY) {
+                this.isInitSDK = true;
+                message = "获取接口是异步的";
+            } else if (code == InfoCode.INIT_INFO_RESULT_OK) {
+                this.isInitSDK = true;
+                message = "获取接口是同步的";
+            } else {
+                this.isInitSDK = true;
+                message = "未知code";
+            }
+            map.putString("message", message);
+            map.putString("code", Integer.toString(code));
+            p.resolve(map);
+        } catch (Throwable throwable) {
+            map.putString("message", "未知错误");
+            map.putString("code", Integer.toString(-2));
+            p.resolve(map);
         }
     }
 
@@ -99,12 +136,8 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
         p.resolve(aaid);
     }
 
-    public static void initMSA(Context context) {
-        try {
-            MiitHelper miitHelper = new MiitHelper(appIdsUpdater);
-            miitHelper.initSDK(context);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @ReactMethod
+    public void isLimit(final Promise p) {
+        p.resolve(isLimit);
     }
 }

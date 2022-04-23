@@ -1,49 +1,43 @@
 package com.maochunjie.msa;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
 
 import com.bun.miitmdid.core.MdidSdkHelper;
 import com.bun.miitmdid.interfaces.IIdentifierListener;
 import com.bun.miitmdid.interfaces.IdSupplier;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 
 public class MiitHelper implements IIdentifierListener {
+    private boolean isSDKLogOn = true; //开启日志
 
-    private AppIdsUpdater _listener;
+    private AppIdsUpdater appIdsUpdater;
 
     public MiitHelper(AppIdsUpdater callback) {
-        _listener = callback;
+        // 加固版本在调用前必须载入SDK安全库,因为加载有延迟，推荐在application中调用loadLibrary方法
+        // System.loadLibrary("msaoaidsec");
+        appIdsUpdater = callback;
     }
 
-    public int initSDK(Context cxt) {
-        return CallFromReflect(cxt);
+    public int initSDK(ReactApplicationContext cxt) {
+        return MdidSdkHelper.InitSdk(cxt, isSDKLogOn, this);
     }
-
-    /*
-     * 通过反射调用，解决android 9以后的类加载升级，导至找不到so中的方法
-     *
-     * */
-    private int CallFromReflect(Context cxt) {
-        return MdidSdkHelper.InitSdk(cxt, true, this);
-    }
-
 
     @Override
-    public void OnSupport(boolean isSupport, IdSupplier _supplier) {
-        if (_supplier == null) {
+    public void onSupport(IdSupplier idSupplier) {
+        if (idSupplier == null) {
             return;
         }
-        if (_listener != null) {
+        if (appIdsUpdater != null) {
             WritableMap map = Arguments.createMap();
-            map.putString("OAID", _supplier.getOAID());
-            map.putString("VAID", _supplier.getVAID());
-            map.putString("AAID", _supplier.getAAID());
-            map.putBoolean("isSupport", _supplier.isSupported());
-            _listener.OnIdsAvalid(map);
+            map.putString("OAID", idSupplier.getOAID());
+            map.putString("VAID", idSupplier.getVAID());
+            map.putString("AAID", idSupplier.getAAID());
+            map.putBoolean("isSupport", idSupplier.isSupported());
+            map.putBoolean("isLimit", idSupplier.isLimited());
+            appIdsUpdater.OnIdsAvalid(map);
         }
     }
 

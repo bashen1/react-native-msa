@@ -2,8 +2,8 @@ import {NativeModules} from 'react-native';
 
 const {RNReactNativeMsa} = NativeModules;
 
-export async function initSDK() {
-	return await RNReactNativeMsa.initSDK();
+export async function initSDK(params) {
+    return await RNReactNativeMsa.initSDK(params);
 }
 
 export async function isSupport() {
@@ -20,4 +20,8 @@ export async function getVAID() {
 
 export async function getAAID() {
     return await RNReactNativeMsa.getAAID();
+}
+
+export async function isLimit() {
+    return await RNReactNativeMsa.isLimit();
 }
