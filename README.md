@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/react-native-msa.svg)](https://badge.fury.io/js/react-native-msa)
 
-SDK Version 1.1.0
+SDK Version 1.2.1
 
 ## 开始
 
@@ -42,8 +42,10 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
 | getVAID | 获取VAID |
 | getAAID | 获取AAID |
 | isLimit | 补充设备标识符开关 |
+| addReceiveMsaIdsListener | 增加oaid、vaid等值获取到后的触发监听，会返回所有相关ID等，需在初始化initSDK之前调用 |
+| removeListener | 移除addReceiveMsaIdsListener这个监听 |
 
-`注意：`initSDK 成功后不要立马取值，可以延迟50～100毫秒再进行取值
+`注意：`initSDK 成功后不要立马取值，可以延迟50～100毫秒再进行取值（可用addReceiveMsaIdsListener监听解决）
 
 ### initSDK 返回状态码（字符串）
 
