@@ -1,14 +1,16 @@
 package com.maochunjie.msa;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.bun.miitmdid.core.InfoCode;
 import com.bun.miitmdid.core.MdidSdkHelper;
 import com.facebook.react.bridge.*;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
     private static String TAG = "RNReactNativeMsaModule";
-    private final ReactApplicationContext reactContext;
+    private static ReactApplicationContext reactContext = null;
 
     private Boolean isInitSDK = false; // 是否初始化SDK
     private Boolean isCertInit = false; // 是否初始化证书
@@ -27,6 +29,18 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
             aaid = data.getString("AAID");
             isSupport = data.getBoolean("isSupport");
             isLimit = data.getBoolean("isLimit");
+
+            // 监听返回的数据
+            WritableMap map = Arguments.createMap();
+            map.putString("oaid", oaid);
+            map.putString("vaid", vaid);
+            map.putString("aaid", aaid);
+            map.putBoolean("isSupport", isSupport);
+            map.putBoolean("isLimit", isLimit);
+
+            if (reactContext != null) {
+                sendEvent(reactContext, "addReceiveMsaIdsListener", map);
+            }
         }
     };
 
@@ -46,6 +60,7 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
      * 0 cert为空
      * -1 cert初始化失败
      * -2 未知错误
+     *
      * @param data
      * @param p
      */
@@ -139,5 +154,9 @@ public class RNReactNativeMsaModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void isLimit(final Promise p) {
         p.resolve(isLimit);
+    }
+
+    private static void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
+        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(TAG + eventName, params);
     }
 }
